@@ -1,0 +1,431 @@
+// EM单位基准字体大小
+$emunit-standard-font-size: 16px !default;
+// *=====================================*
+// *=*  px单位==>em单位
+// *=*
+// *=* $number   : 单位值
+// *=* example   :
+// *=*  div{
+// *=*    width: px2em(100px);
+// *=*  }
+// *=====================================*
+@function px2em($px, $base-font-size: $emunit-standard-font-size) {
+  @if (unitless($px)) {
+    @warn "Assuming #{$px} to be in pixels, attempting to convert it into pixels for you";
+    @return px2em($px + 0px); // That may fail.
+  } @else if (unit($px) == em) {
+    @return $px;
+  }
+  @return ($px / $base-font-size) * 1em;
+}
+
+// *=====================================*
+// *=* 去除数字单位
+// *=*
+// *=* $number   : 单位值
+// *=* example   : strip-units(20px);
+// *=====================================*
+@function strip-units($number) {
+  @return $number / ($number * 0 + 1);
+}
+
+// 根据输出图[iPhone6]计算出的html字体大小
+$design-standard-font-size: 75px !default;
+// *==============================================*
+// *=* px表达式==>rem表达式
+// *=*
+// *=* $property : 样式的名称
+// *=* $values   : 样式的值
+// *=* example   :
+// *=*  div{
+// *=*    @include px2rem(width,50px);
+// *=*    @include px2rem(margin,1px,1px,1px,1px);
+// *=*  }
+// *==============================================*
+@mixin px2rem($property, $values...) {
+  $max: length($values); //返回$values列表的长度值
+  $pxValues: '';
+  $remValues: '';
+
+  @for $i from 1 through $max {
+    $value: strip-units(nth($values, $i));
+    $design-standard-font-size: strip-units($design-standard-font-size);
+    $remValues: #{$remValues + $value / $design-standard-font-size}rem;
+
+    @if $i < $max {
+      $remValues: #{$remValues + " "};
+    }
+  }
+
+  #{$property}: $remValues;
+}
+
+@mixin px2remMulti($property, $values...) {
+  $max: length($values); //返回$values列表的长度值
+  $remValues: '';
+
+  @for $i from 1 through $max {
+
+    @if type_of( nth($values, $i) ) == number {
+      $value: strip-units(nth($values, $i));
+      $design-standard-font-size: strip-units($design-standard-font-size);
+      $remValues: #{$remValues + $value / $design-standard-font-size}rem;
+    } @else {
+      $remValues: #{$remValues + nth($values, $i)};
+    }
+
+    @if $i < $max {
+      $remValues: #{$remValues + " "};
+    }
+  }
+
+  #{$property}: $remValues;
+}
+
+// *=====================================*
+// *=* 清除浮动
+// *=====================================*
+@mixin clearfix {
+  &:before,
+  &:after {
+    content: "";
+    display: table;
+  }
+  &:after {
+    clear: both;
+    overflow: hidden;
+  }
+}
+
+%clearfix {
+  @include clearfix;
+}
+
+// *=* 设置默认的对齐方式
+$inline-block-alignment: middle !default;
+// *=* 设置默认非兼容IE
+$legacy-support-for-ie: false !default;
+// *=======================================*
+// *=* 实现单行垂直居中对齐display:inline-block
+// *=*
+// *=* example   :
+// *=*  label,input{
+// *=*      @include inline-block();[middle]
+// *=*      @include inline-block(top);
+// *=*      @include inline-block(bottom);
+// *=*  }
+// *=======================================*
+@mixin inline-block($alignment: $inline-block-alignment) {
+  display: inline-block;
+  @if $alignment and $alignment != none {
+    vertical-align: $alignment;
+  }
+  @if $legacy-support-for-ie {
+    *vertical-align: auto;
+    zoom: 1;
+    *display: inline;
+  }
+}
+
+// *=====================================*
+// *=* 元素水平居中【适合单元素水平居中】
+// *=*
+// *=* example   :
+// *=*  button{
+// *=*      @include horizontal-center();
+// *=*  }
+// *=====================================*
+@mixin horizontal-center {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+// *=====================================*
+// *=* 元素水平居中【适合多元素水平居中】
+// *=*
+// *=* example   :
+// *=*  button1{
+// *=*      @extend %horizontal-center;
+// *=*  }
+// *=*  button2{
+// *=*      @extend %horizontal-center;
+// *=*  }
+// *=====================================*
+%horizontal-center {
+  @include horizontal-center;
+}
+
+// *=====================================*
+// *=* 浏览器和屏幕阅读器都隐藏元素
+// *=====================================*
+@mixin hidden {
+  display: none !important;
+  visibility: hidden;
+}
+
+%hidden {
+  @include hidden;
+}
+
+// *=====================================*
+// *=* 仅浏览器隐藏，屏幕阅读器不被隐藏
+// *=====================================*
+@mixin visuallyhidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  //扩展了`.visuallyhidden`，
+  //允许许`.focusable`元素通过键盘获取
+  &.focusable:active,
+  &.focusable:focus {
+    clip: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    width: auto;
+  }
+}
+
+%visuallyhidden {
+  @include visuallyhidden;
+}
+
+// *=====================================*
+// *=* 隐藏元素，但布局中占有空间
+// *=====================================*
+@mixin invisible {
+  visibility: hidden;
+}
+
+%invisible {
+  @include invisible;
+}
+
+// *=====================================*
+// *=* 禁用样式disabled
+// *=*
+// *=* example :
+// *=* input[disabled]{
+// *=*    @include disabled(#efefef,#ccc);
+// *=* }
+// *=====================================*
+@mixin disabled($bgColor: #e6e6e6,$textColor:#ababab) {
+  background-color: $bgColor !important;
+  color: $textColor !important;
+  cursor: not-allowed !important;
+}
+
+// *=====================================*
+// *=* flex属性
+// *=====================================*
+@mixin flex {
+  display: -webkit-box; /* 老版本语法: Safari, iOS, Android browser, older WebKit browsers. */
+  display: -webkit-flex; /* 新版本语法: Chrome 21+ */
+  display: flex;
+}
+
+@mixin align-items {
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  align-items: center;
+}
+
+@mixin align-items-bottom {
+  -webkit-box-align: end;
+  -webkit-align-items: flex-end;
+  align-items: flex-end;
+}
+
+@mixin flex-value($value:1) {
+  -webkit-box-flex: $value;
+  -webkit-flex: $value;
+  flex: $value;
+}
+
+@mixin justify-content($value:flex-start) {
+  -webkit-justify-content: $value;
+  justify-content: $value;
+}
+
+// *=====================================*
+// *=* border-1px
+// *=====================================*
+@mixin border-1px($position ,$color) {
+  $ratio2: 50%;
+  $ratio3: 33.3333333%;
+  border: none !important;
+  @if $position == t {
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
+    background-position: top;
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+      background-image: linear-gradient(180deg, $color, $color $ratio2, transparent $ratio2);
+    }
+    @media screen and (-webkit-min-device-pixel-ratio: 3) {
+      background-image: linear-gradient(180deg, $color, $color $ratio3, transparent $ratio3);
+    }
+  } @else if $position == b {
+    background-size: 100% 1px;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+      background-image: linear-gradient(0deg, $color, $color $ratio2, transparent $ratio2);
+    }
+    @media screen and (-webkit-min-device-pixel-ratio: 3) {
+      background-image: linear-gradient(0deg, $color, $color $ratio3, transparent $ratio3);
+    }
+  } @else if $position == l {
+    background-size: 1px 100%;
+    background-repeat: no-repeat;
+    background-position: left top;
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+      background-image: linear-gradient(90deg, $color, $color $ratio2, transparent $ratio2);
+    }
+    @media screen and (-webkit-min-device-pixel-ratio: 3) {
+      background-image: linear-gradient(90deg, $color, $color $ratio3, transparent $ratio3);
+    }
+  } @else if $position == r {
+    background-size: 1px 100%;
+    background-repeat: no-repeat;
+    background-position: right top;
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+      background-image: linear-gradient(270deg, $color, $color $ratio2, transparent $ratio2);
+    }
+    @media screen and (-webkit-min-device-pixel-ratio: 3) {
+      background-image: linear-gradient(270deg, $color, $color $ratio3, transparent $ratio3);
+    }
+  } @else if $position == tr {
+    background-size: 100% 1px, 1px 100%;
+    background-repeat: no-repeat;
+    background-position: top, right top;
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+      @include px2rem(padding-top, 2px);
+      @include px2rem(padding-right, 2px);
+      background-image: linear-gradient(180deg, $color, $color $ratio2, transparent $ratio2),
+      linear-gradient(270deg, $color, $color $ratio2, transparent $ratio2);
+    }
+    @media screen and (-webkit-min-device-pixel-ratio: 3) {
+      @include px2rem(padding-top, 3px);
+      @include px2rem(padding-right, 3px);
+      background-image: linear-gradient(180deg, $color, $color $ratio3, transparent $ratio3),
+      linear-gradient(270deg, $color, $color $ratio3, transparent $ratio3);
+    }
+  } @else if $position == br {
+    background-size: 1px 100%, 100% 1px;
+    background-repeat: no-repeat;
+    background-position: right top, bottom;
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+      @include px2rem(padding-right, 2px);
+      @include px2rem(padding-bottom, 2px);
+      background-image: linear-gradient(270deg, $color, $color $ratio2, transparent $ratio2),
+      linear-gradient(0deg, $color, $color $ratio2, transparent $ratio2);
+    }
+    @media screen and (-webkit-min-device-pixel-ratio: 3) {
+      @include px2rem(padding-right, 3px);
+      @include px2rem(padding-bottom, 3px);
+      background-image: linear-gradient(270deg, $color, $color $ratio3, transparent $ratio3),
+      linear-gradient(0deg, $color, $color $ratio3, transparent $ratio3);
+    }
+  } @else if $position == tb {
+    background-size: 100% 1px, 100% 1px;
+    background-repeat: no-repeat;
+    background-position: top, bottom;
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+      @include px2rem(padding-top, 2px);
+      @include px2rem(padding-bottom, 2px);
+      background-image: linear-gradient(180deg, $color, $color $ratio2, transparent $ratio2),
+      linear-gradient(0deg, $color, $color $ratio2, transparent $ratio2);
+    }
+    @media screen and (-webkit-min-device-pixel-ratio: 3) {
+      @include px2rem(padding-top, 3px);
+      @include px2rem(padding-bottom, 3px);
+      background-image: linear-gradient(180deg, $color, $color $ratio3, transparent $ratio3),
+      linear-gradient(0deg, $color, $color $ratio3, transparent $ratio3);
+    }
+  } @else if $position == all {
+    background-size: 100% 1px, 1px 100%, 100% 1px, 1px 100%;
+    background-repeat: no-repeat;
+    background-position: top, right top, bottom, left top;
+    @media screen and (-webkit-min-device-pixel-ratio: 2) {
+      @include px2rem(padding, 2px);
+      background-image: linear-gradient(180deg, $color, $color $ratio2, transparent $ratio2),
+      linear-gradient(270deg, $color, $color $ratio2, transparent $ratio2),
+      linear-gradient(0deg, $color, $color $ratio2, transparent $ratio2),
+      linear-gradient(90deg, $color, $color $ratio2, transparent $ratio2);
+    }
+    @media screen and (-webkit-min-device-pixel-ratio: 3) {
+      @include px2rem(padding, 3px);
+      background-image: linear-gradient(180deg, $color, $color $ratio3, transparent $ratio3),
+      linear-gradient(270deg, $color, $color $ratio3, transparent $ratio3),
+      linear-gradient(0deg, $color, $color $ratio3, transparent $ratio3),
+      linear-gradient(90deg, $color, $color $ratio3, transparent $ratio3);
+    }
+  }
+}
+
+@mixin border-none() {
+  &:after {
+    display: none;
+  }
+}
+
+// *=====================================*
+// *=* font-size
+// *=====================================*
+@mixin font-size-small() {
+  @include px2rem(font-size, 20px);
+}
+
+@mixin font-size-media() {
+  @include px2rem(font-size, 28px);
+}
+
+@mixin font-size-large() {
+  @include px2rem(font-size, 36px);
+}
+
+@mixin font-size-small-x() {
+  @include px2rem(font-size, 24px);
+}
+
+@mixin font-size-media-x() {
+  @include px2rem(font-size, 32px);
+}
+
+@mixin font-size-large-x() {
+  @include px2rem(font-size, 44px);
+}
+
+// 不换行
+@mixin no-wrap {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+// 背景图片
+@mixin bg-image($url) {
+  background-image: url($url + "@2x.png");
+  @media (-webkit-min-device-pixel-ratio: 3), (min-device-pixel-ratio: 3) {
+    background-image: url($url + "@3x.png");
+  }
+}
+
+// 扩展点击区域
+@mixin extend-click() {
+  position: relative;
+  &:before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+  }
+}

@@ -1,0 +1,10 @@
+@import "mixin";
+
+.mint-toast {
+  @include px2rem(border-radius, 8px);
+  padding: 0.3rem 0.23rem !important;
+  .mint-toast-text {
+    @include px2rem(font-size, 26px);
+    @include px2rem(line-height, 26px);
+  }
+}
